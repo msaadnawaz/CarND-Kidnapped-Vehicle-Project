@@ -3,7 +3,7 @@
 #include "json.hpp"
 #include <math.h>
 #include "particle_filter.h"
-//just checking
+
 using namespace std;
 
 // for convenience
