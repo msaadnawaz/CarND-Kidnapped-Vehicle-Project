@@ -164,7 +164,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 
 		//associate observations to landmarks
-		dataAssociation(nearby_landmarks, trans_observations)
+		dataAssociation(nearby_landmarks, trans_observations);
 
 		//weights calculations: compute multivariate gaussian probability density function
 		particles[p].weight = 1.0;
