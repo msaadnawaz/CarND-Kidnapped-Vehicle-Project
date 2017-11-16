@@ -72,13 +72,13 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 		{
 			new_x = particles[i].x + velocity*delta_t*cos(particles[i].theta);
 			new_y = particles[i].y + velocity*delta_t*sin(particles[i].theta);
-			new_theta = particles[i].theta
+			new_theta = particles[i].theta;
 		}
 		else
 		{
-			new_x = particles[i].x + velocity/yaw_rate * [sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta)];
-			new_y = particles[i].y + velocity/yaw_rate * [cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t)];
-			new_theta = sin(particles[i].theta + yaw_rate * delta_t;
+			new_x = particles[i].x + (velocity/yaw_rate) * (sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta));
+			new_y = particles[i].y + (velocity/yaw_rate) * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t));
+			new_theta = sin(particles[i].theta + yaw_rate * delta_t);
 		}
 
 		//noise added into newly calculated values
@@ -151,7 +151,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		}
 
 		//transform observations into map coordinates
-		Vector<LandmarkObs> trans_observations;
+		std::vector<LandmarkObs> trans_observations;
 		LandmarkObs obs;
 		for(int i=0; i<observations.size(); i++)
 		{
@@ -169,8 +169,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		//weights calculations: compute multivariate gaussian probability density function
 		particles[p].weight = 1.0;
 
-		var_x = std_landmark[0]*std_landmark[0];
-		var_y = std_landmark[1]*std_landmark[1];
+		double var_x = std_landmark[0]*std_landmark[0];
+		double var_y = std_landmark[1]*std_landmark[1];
+		double calc_weight;
 
 		for(int tobs=0; tobs<trans_observations.size(); tobs++)
 		{
