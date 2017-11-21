@@ -108,8 +108,10 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 		{
 			calc_dist = dist(predicted[pred].x, predicted[pred].y, observations[obs].x, observations[obs].y);
 			if(calc_dist < min_dist)
+			{
 				min_dist = calc_dist;
-				obs_id = pred;
+				obs_id = predicted[pred].id;
+			}
 		}
 		observations[obs].id = obs_id;
 	}
