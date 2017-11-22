@@ -160,7 +160,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		double var_y = std_landmark[1]*std_landmark[1];
 		double num;
 		double denom;
-		double curr_weight;
+		double curr_weight = 1.0;
 
 		for(int obs=0; obs<observations.size(); obs++) {
 			int l_id = observations[obs].id;
