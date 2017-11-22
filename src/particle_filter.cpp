@@ -170,8 +170,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double delta_x = obs_x - predicted_landmarks[l_id].x;
 			double delta_y = obs_y - predicted_landmarks[l_id].y;
 
-			num = exp(-0.5 * pow(delta_x,2.0) / var_x + pow(delta_y,2.0) / var_y);
-			denom = 2.0 * M_PI * std_landmark[0]*std_landmark[1];
+			num = exp(- 0.5 * (pow(delta_x,2.0)*std_landmark[0] + pow(delta_y,2.0)*std_landmark[1] ));
+			denom = sqrt(2.0 * M_PI * std_landmark[0] * std_landmark[1]);
 			curr_weight = curr_weight * num / denom;
 		}
 		weights[i] = curr_weight;
