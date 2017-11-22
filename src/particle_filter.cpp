@@ -168,18 +168,18 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	            int l_id = observations[obs].id;
 	            double obs_x = observations[obs].x;
 	            double obs_y = observations[obs].y;
-
+	            double del_x = 0;
+          		double del_y = 0;
 	            for (int nl=0; nl< predicted_landmarks.size(); nl++)
 	            {
 	            	if(l_id == predicted_landmarks[nl].id)
 	            	{
-	            		double del_x = obs_x - predicted_landmarks[nl].x;
-	            		double del_y = obs_y - predicted_landmarks[nl].y;
-
+	            		del_x = obs_x - predicted_landmarks[nl].x;
+	            		del_y = obs_y - predicted_landmarks[nl].y;
+	            	}
 	            		calc_weight = exp(-0.5 * (pow(del_x,2.0) * var_x + pow(del_y,2) / var_y));
 	            		calc_weight /= 2.0 * M_PI * std_x*std_y;
 	            		particles[i].weight *= calc_weight;
-	            	}
 	        }
 	        weights[i] = particles[i].weight;
 	    }
