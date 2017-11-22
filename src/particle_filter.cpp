@@ -158,7 +158,9 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		particles[i].weight = 1.0;
 		double var_x = std_landmark[0]*std_landmark[0];
 		double var_y = std_landmark[1]*std_landmark[1];
-		double calc_weight;
+		double num;
+		double denom;
+		double curr_weight;
 
 		for(int obs=0; obs<observations.size(); obs++) {
 			int l_id = observations[obs].id;
@@ -168,11 +170,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double delta_x = obs_x - predicted_landmarks[l_id].x;
 			double delta_y = obs_y - predicted_landmarks[l_id].y;
 
-			calc_weight = exp(-0.5 * pow(delta_x,2.0) / var_x + pow(delta_y,2.0) / var_y);
-			calc_weight = calc_weight / (2.0 * M_PI * std_landmark[0]*std_landmark[1]);
-			particles[i].weight = particles[i].weight * calc_weight;
+			num = exp(-0.5 * pow(delta_x,2.0) / var_x + pow(delta_y,2.0) / var_y);
+			denom = 2.0 * M_PI * std_landmark[0]*std_landmark[1];
+			curr_weight = curr_weight * num / denom;
 		}
-		weights[i] = particles[i].weight;
+		weights[i] = curr_weight;
+		particles[i].weight = curr_weight;
 
 	}
 }
