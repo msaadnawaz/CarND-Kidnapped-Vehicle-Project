@@ -161,12 +161,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			obs = observations[i];
 
 			trans_obs.id = obs.id;
-			trans_obs.x = particles[p].x + (obs.x * cos(p_theta) - obs.y * sin(p_theta));
-			trans_obs.y = particles[p].y + (obs.x * sin(p_theta) + obs.y * cos(p_theta));
+			trans_obs.x = p_x + (obs.x * cos(p_theta) - obs.y * sin(p_theta));
+			trans_obs.y = p_y + (obs.x * sin(p_theta) + obs.y * cos(p_theta));
 			trans_observations.push_back(trans_obs);
 		}
 
-	        dataAssociation(trans_observations, nearby_landmarks);
+	        dataAssociation(nearby_landmarks, trans_observations);
 
 	        particles[p].weight = 1.0;
 
@@ -176,10 +176,10 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double var_y = std_y * std_y;
 	        double calc_weight;
 
-	        for(int obs=0; obs<observations.size(); obs++) {
-	            int obs_id = observations[obs].id;
-	            double obs_x = observations[obs].x;
-	            double obs_y = observations[obs].y;
+	        for(int obs=0; obs<trans_observations.size(); obs++) {
+	            int obs_id = trans_observations[obs].id;
+	            double obs_x = trans_observations[obs].x;
+	            double obs_y = trans_observations[obs].y;
 
 				double del_x = obs_x - nearby_landmarks[obs_id].x;
 				double del_y = obs_y - nearby_landmarks[obs_id].y;
