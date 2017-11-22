@@ -89,7 +89,7 @@ public:
 	 * @param map Map class containing map landmarks
 	 */
 	void updateWeights(double sensor_range, double std_landmark[],
-			const std::vector<LandmarkObs> &observations, const Map &map_landmarks);
+			std::vector<LandmarkObs> &observations, Map &map_landmarks);
 	
 	/**
 	 * resample Resamples from the updated set of particles to form

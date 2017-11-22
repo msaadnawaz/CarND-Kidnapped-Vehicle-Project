@@ -118,7 +118,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 }
 
 void ParticleFilter::updateWeights(double sensor_range, double std_landmark[], 
-		const std::vector<LandmarkObs> &observations, const Map &map_landmarks) {
+		std::vector<LandmarkObs> &observations, Map &map_landmarks) {
 	// TODO: Update the weights of each particle using a mult-variate Gaussian distribution. You can read
 	//   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
@@ -130,73 +130,47 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 
-	// for each particle...
-	for (int i = 0; i < num_particles; i++) {
+	for(int i=0; i<num_particles; i++){
+		double current_x = particles[i].x;
+		double current_y = particles[i].y;
+		double current_theta = particles[i].theta;
 
-		// get the particle x, y coordinates
-		double p_x = particles[i].x;
-		double p_y = particles[i].y;
-		double p_theta = particles[i].theta;
+		vector<LandmarkObs> predicted_landmarks;
+		for(int l=0; l<map_landmarks.landmark_list.size(); l++){
+			int l_id = map_landmarks.landmark_list[l].id_i;
+			double l_x = map_landmarks.landmark_list[l].x_f;
+			double l_y = map_landmarks.landmark_list[l].y_f;
 
-		// create a vector to hold the map landmark locations predicted to be within sensor range of the particle
-		vector<LandmarkObs> predictions;
+			double delta_x = l_x - current_x;
+			double delta_y = l_y - current_y;
 
-		// for each map landmark...
-		for (unsigned int j = 0; j < map_landmarks.landmark_list.size(); j++) {
-
-			// get id and x,y coordinates
-			float lm_x = map_landmarks.landmark_list[j].x_f;
-			float lm_y = map_landmarks.landmark_list[j].y_f;
-			int lm_id = map_landmarks.landmark_list[j].id_i;
-
-			// only consider landmarks within sensor range of the particle (rather than using the "dist" method considering a circular
-			// region around the particle, this considers a rectangular region but is computationally faster)
-			if (fabs(lm_x - p_x) <= sensor_range && fabs(lm_y - p_y) <= sensor_range) {
-
-				// add prediction to vector
-				predictions.push_back(LandmarkObs{ lm_id, lm_x, lm_y });
+			double distance = sqrt(pow(delta_x, 2.0) + pow(delta_y, 2.0));
+			if(distance<=sensor_range){
+				l_x = delta_x * cos(current_theta) + delta_y * sin(current_theta);
+				l_y = delta_y * cos(current_theta) - delta_x * sin(current_theta);
+				LandmarkObs landmark_in_range = {l_id, l_x, l_y};
+				predicted_landmarks.push_back(landmark_in_range);
 			}
 		}
 
-		// create and populate a copy of the list of observations transformed from vehicle coordinates to map coordinates
-		vector<LandmarkObs> transformed_os;
-		for (unsigned int j = 0; j < observations.size(); j++) {
-			double t_x = cos(p_theta)*observations[j].x - sin(p_theta)*observations[j].y + p_x;
-			double t_y = sin(p_theta)*observations[j].x + cos(p_theta)*observations[j].y + p_y;
-			transformed_os.push_back(LandmarkObs{ observations[j].id, t_x, t_y });
+		dataAssociation(predicted_landmarks, observations);
+
+		double new_weight = 1.0;
+		for(int obs=0; obs<observations.size(); obs++) {
+			int l_id = observations[obs].id;
+			double obs_x = observations[obs].x;
+			double obs_y = observations[obs].y;
+
+			double delta_x = obs_x - predicted_landmarks[l_id].x;
+			double delta_y = obs_y - predicted_landmarks[l_id].y;
+
+			double numerator = exp(- 0.5 * (pow(delta_x,2.0)*std_landmark[0] + pow(delta_y,2.0)*std_landmark[1] ));
+			double denominator = sqrt(2.0 * M_PI * std_landmark[0] * std_landmark[1]);
+			new_weight = new_weight * numerator/denominator;
 		}
+		weights[i] = new_weight;
+		particles[i].weight = new_weight;
 
-		// perform dataAssociation for the predictions and transformed observations on current particle
-		dataAssociation(predictions, transformed_os);
-
-		// reinit weight
-		particles[i].weight = 1.0;
-
-		for (unsigned int j = 0; j < transformed_os.size(); j++) {
-
-			// placeholders for observation and associated prediction coordinates
-			double o_x, o_y, pr_x, pr_y;
-			o_x = transformed_os[j].x;
-			o_y = transformed_os[j].y;
-
-			int associated_prediction = transformed_os[j].id;
-
-			// get the x,y coordinates of the prediction associated with the current observation
-			for (unsigned int k = 0; k < predictions.size(); k++) {
-				if (predictions[k].id == associated_prediction) {
-				  pr_x = predictions[k].x;
-				  pr_y = predictions[k].y;
-				}
-			}
-
-			// calculate weight for this observation with multivariate Gaussian
-			double s_x = std_landmark[0];
-			double s_y = std_landmark[1];
-			double obs_w = ( 1/(2*M_PI*s_x*s_y)) * exp( -( pow(pr_x-o_x,2)/(2*pow(s_x, 2)) + (pow(pr_y-o_y,2)/(2*pow(s_y, 2))) ) );
-
-			// product of this obersvation weight with total observations weight
-			particles[i].weight *= obs_w;
-		}
 	}
 }
 
