@@ -133,7 +133,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//Update weight for each particle using multi-variate-normal
 	for (int p=0; p < num_particles; p++)
 	{
-		int p_id = particles[p].id;
+
 		double p_x = particles[p].x;
 		double p_y = particles[p].y;
 		double p_theta = particles[p].theta;
@@ -155,9 +155,10 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		//transform observations into map coordinates
 		std::vector<LandmarkObs> trans_observations;
 		LandmarkObs obs;
+		LandmarkObs trans_obs;
 		for(int i=0; i<observations.size(); i++)
 		{
-			LandmarkObs trans_obs;
+
 			obs = observations[i];
 
 			trans_obs.id = obs.id;
@@ -166,30 +167,35 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			trans_observations.push_back(trans_obs);
 		}
 
-	        dataAssociation(nearby_landmarks, trans_observations);
+		//associated transformed observations to nearby landmarks
+		dataAssociation(nearby_landmarks, trans_observations);
 
-	        particles[p].weight = 1.0;
+		//set particle weight to 1
+		particles[p].weight = 1.0;
 
-	        double std_x = std_landmark[0];
-			double std_y = std_landmark[1];
-			double var_x = std_x * std_x;
-			double var_y = std_y * std_y;
-	        double calc_weight;
+		double std_x = std_landmark[0];
+		double std_y = std_landmark[1];
+		double var_x = std_x * std_x;
+		double var_y = std_y * std_y;
+		double calc_weight;
+		LandmarkObs tobs;
 
-	        for(int obs=0; obs<trans_observations.size(); obs++) {
-	            int obs_id = trans_observations[obs].id;
-	            double obs_x = trans_observations[obs].x;
-	            double obs_y = trans_observations[obs].y;
+		for(int i=0; i<trans_observations.size(); i++)
+		{
+			tobs = trans_observations[i];
+			int tobs_id = trans_observations[tobs].id;
+			double tobs_x = trans_observations[tobs].x;
+			double tobs_y = trans_observations[tobs].y;
 
-				double del_x = obs_x - nearby_landmarks[obs_id].x;
-				double del_y = obs_y - nearby_landmarks[obs_id].y;
+			double del_x = tobs.x - nearby_landmarks[tobs.id].x;
+			double del_y = tobs.y - nearby_landmarks[tobs.id].y;
 
-				calc_weight = exp(-0.5 * (pow(del_x,2.0) * var_x + pow(del_y,2) / var_y));
-				calc_weight /= 2.0 * M_PI * std_x*std_y;
-				particles[p].weight *= calc_weight;
-	        }
-	        weights[p] = particles[p].weight;
-	    }
+			calc_weight = exp(-0.5 * (pow(del_x,2.0) / var_x + pow(del_y,2) / var_y));
+			calc_weight /= 2.0 * M_PI * std_x*std_y;
+			particles[p].weight *= calc_weight;
+		}
+		weights[p] = particles[p].weight;
+	}
 }
 
 void ParticleFilter::resample() {
