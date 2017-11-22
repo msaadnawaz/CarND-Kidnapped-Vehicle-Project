@@ -183,15 +183,12 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		for(int i=0; i<trans_observations.size(); i++)
 		{
 			tobs = trans_observations[i];
-			int tobs_id = trans_observations[tobs].id;
-			double tobs_x = trans_observations[tobs].x;
-			double tobs_y = trans_observations[tobs].y;
 
 			double del_x = tobs.x - nearby_landmarks[tobs.id].x;
 			double del_y = tobs.y - nearby_landmarks[tobs.id].y;
 
 			calc_weight = exp(-0.5 * (pow(del_x,2.0) / var_x + pow(del_y,2) / var_y));
-			calc_weight /= 2.0 * M_PI * std_x*std_y;
+			calc_weight /= 2.0 * M_PI * std_x * std_y;
 			particles[p].weight *= calc_weight;
 		}
 		weights[p] = particles[p].weight;
