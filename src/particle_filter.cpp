@@ -168,8 +168,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 			double delta_x = obs_x - predicted_landmarks[l_id].x;
 			double delta_y = obs_y - predicted_landmarks[l_id].y;
 
-			calc_weight = exp(-0.5 * pow(delta_x,2) / var_x + pow(delta_y,2) / var_y);
-			calc_weight /= (2 * M_PI * std_landmark[0]*std_landmark[1]);
+			calc_weight = exp(-0.5 * pow(delta_x,2.0) / var_x + pow(delta_y,2.0) / var_y);
+			calc_weight = calc_weight / (2.0 * M_PI * std_landmark[0]*std_landmark[1]);
 			particles[i].weight = particles[i].weight * calc_weight;
 		}
 		weights[i] = particles[i].weight;
